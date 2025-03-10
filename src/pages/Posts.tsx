@@ -1,33 +1,23 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
-type Post = {
-  id: number;
-  title: string;
-  body: string;
-  userId: number;
-};
+
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPosts, nextPage, prevPage } from "../store/postsSlice";
+import { RootState } from "../store/store";
 
 const Posts = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [page, setPage] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const dispatch = useDispatch();
+  const {
+    activePosts: posts,
+    currPage,
+    loading,
+  } = useSelector((state: RootState) => state.posts);
+
   const limit = 10;
 
   useEffect(() => {
-    setLoading(true);
-    fetch(
-      `https://jsonplaceholder.typicode.com/posts?_start=${
-        page * limit
-      }&_limit=${limit}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data);
-        // console.log(data);
-        setLoading(false);
-      })
-      .catch((err) => console.error("Error fetching posts:", err));
-  }, [page]);
+    dispatch(fetchPosts(currPage) as any);
+  }, [currPage, dispatch]);
 
   return (
     <div className="min-h-screen bg-gray-100 p-5">
@@ -67,14 +57,14 @@ const Posts = () => {
         <div className="flex justify-between mt-6 flex-wrap">
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
+            onClick={() => dispatch(prevPage())}
+            disabled={currPage === 0}
           >
             Previous
           </button>
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300"
-            onClick={() => setPage(page + 1)}
+            onClick={() => dispatch(nextPage())}
             disabled={posts.length < limit}
           >
             Next
