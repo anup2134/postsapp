@@ -1,4 +1,4 @@
-# Posts App
+# Posts App (https://postappassignment.netlify.app/posts)
 Instructions on running app locally
 
 
