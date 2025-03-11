@@ -13,16 +13,23 @@ export const fetchPosts = createAsyncThunk(
   "posts/fetchPosts",
   async (page: number, { getState }) => {
     const state = getState() as RootState;
-    if (page < state.posts.posts.length) return state.posts.posts[page];
+    if (page < state.posts.posts.length) {
+      const res: [boolean, Post[]] = [false, state.posts.posts[page]];
+      return res;
+    }
 
     // console.log("fetching...");
     return await fetch(
       `https://jsonplaceholder.typicode.com/posts?_start=${page * 10}&_limit=10`
     )
-      .then(async (res) => (await res.json()) as Post[])
+      .then(async (res) => {
+        const temp: [boolean, Post[]] = [true, (await res.json()) as Post[]];
+        return temp;
+      })
       .catch((err) => {
         console.log(err);
-        return [] as Post[];
+        const res: [boolean, Post[]] = [false, [] as Post[]];
+        return res;
       });
   }
 );
@@ -45,11 +52,14 @@ export const postsSlice = createSlice({
       .addCase(fetchPosts.pending, (state) => {
         state.loading = true;
       })
-      .addCase(fetchPosts.fulfilled, (state, action: PayloadAction<Post[]>) => {
-        state.activePosts = action.payload;
-        state.posts.push(action.payload);
-        state.loading = false;
-      })
+      .addCase(
+        fetchPosts.fulfilled,
+        (state, action: PayloadAction<[boolean, Post[]]>) => {
+          state.activePosts = action.payload[1];
+          if (action.payload[0]) state.posts.push(action.payload[1]);
+          state.loading = false;
+        }
+      )
       .addCase(fetchPosts.rejected, (state) => {
         state.loading = false;
       });

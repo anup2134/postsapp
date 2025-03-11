@@ -17,6 +17,7 @@ const Posts = () => {
 
   useEffect(() => {
     dispatch(fetchPosts(currPage) as any);
+    // console.log(currPage);
   }, [currPage, dispatch]);
 
   return (
